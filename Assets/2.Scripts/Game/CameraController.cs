@@ -36,6 +36,7 @@ public class CameraController : MonoBehaviour
         _player = player.transform;
         _cameraPos = _player.transform.GetChild(1).transform;
         _deadCameraPos = _player.transform.GetChild(2).transform;
+        transform.position = _player.position;
         _checkTime = 0;
         _isInit = true;
         _isGameOver = false;

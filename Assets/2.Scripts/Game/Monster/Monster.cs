@@ -266,6 +266,11 @@ public class Monster : StateMachineBase<MonsterState>
         _capturePercentage = _playerCapturePower /_maxCaptureValue;
         _uiMonsterState.SetCaputrePercentage(_capturePercentage);
         _uiMonsterState.ResetUIMonsterState(_level);
+
+        if (_isFriend)
+        {
+            _uiMonsterState.HideState();
+        }
     }
 
 

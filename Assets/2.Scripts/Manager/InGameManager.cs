@@ -66,17 +66,19 @@ public class InGameManager : SingletonGameobject<InGameManager>
     {
         SaveGame();
         _currentState = InGameState.Puase;
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
         Time.timeScale = 0;
     }
 
     public void ResumeGame()
     {
         _currentState = InGameState.Play;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
         Time.timeScale = 1;
+    }
+
+    public void CursorVisibleControl(bool isVisible)
+    {
+        Cursor.visible = isVisible;
+        Cursor.lockState = isVisible ? CursorLockMode.None : CursorLockMode.Locked;
     }
 
     public void GoToTitle()

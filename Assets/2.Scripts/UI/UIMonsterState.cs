@@ -82,7 +82,7 @@ public class UIMonsterState : MonoBehaviour
         _checkTime = 0;
     }
 
-    void HideState()
+    public void HideState()
     {
         _stateWindow.SetActive(false);
         _isUIShow = false;

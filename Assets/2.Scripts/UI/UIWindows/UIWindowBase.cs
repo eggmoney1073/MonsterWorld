@@ -15,16 +15,22 @@ public class UIWindowBase : MonoBehaviour
 
     public virtual void Button_Close()
     {
-        UIManager._Instance.CloseAllWindow();
+        HideUI();
     }
 
     public virtual void ShowUI()
     {
         _isOpened = true;
+        InGameManager._Instance.PauseGame();
+        InGameManager._Instance.CursorVisibleControl(true);
+        UIManager._Instance._IsPause = _isOpen;
     }
 
     public virtual void HideUI()
     {
         _isOpened = false;
+        InGameManager._Instance.ResumeGame();
+        InGameManager._Instance.CursorVisibleControl(false);
+        UIManager._Instance._IsPause = _isOpen;
     }
 }

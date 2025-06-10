@@ -11,6 +11,8 @@ public class UIManager : SingletonGameobject<UIManager>
     UIWeapon _weaponUI;
     CrossHair _crossHair;
 
+    UIWindowBase _openUIWindow;
+
     bool _isPause;
     bool _isGameOver;
 
@@ -19,13 +21,24 @@ public class UIManager : SingletonGameobject<UIManager>
 
     public UIPlayer _PlayerUI { get { return _playerUI; } }
     public bool _GameOver { get { return _isGameOver; } set { _isGameOver = value; } }
+    public bool _IsPause { get { return _isPause; } set { _isPause = value; } }
 
     public void ShowIngameUI(InGameUI ui)
     {
-        _ingameUIWindows[ui].ShowUI();
+        _openUIWindow = _ingameUIWindows[ui];
+        _openUIWindow.ShowUI();
 
         InGameManager._Instance.PauseGame();
         _isPause = true;
+    }
+
+    public void CloseUIWindow()
+    {
+        _openUIWindow.HideUI();
+        InGameManager._Instance.ResumeGame();
+        _isPause = false;
+
+        _openUIWindow = null;
     }
 
     public void ShowGameOverUI(GameOverUI ui)
@@ -107,26 +120,12 @@ public class UIManager : SingletonGameobject<UIManager>
         _weaponUI.InitUIWeapon();
     }
 
-    public void CloseAllWindow()
-    {
-        int uiCount = _ingameUIWindows.Count;
-
-        for (int i = 0; i < uiCount; i++)
-        {
-            InGameUI ui = (InGameUI)i;
-            _ingameUIWindows[ui].HideUI();
-        }
-
-        _isPause = false;
-        InGameManager._Instance.ResumeGame();
-    }
-
     void UIControl()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             if (_isPause)
-                CloseAllWindow();
+                CloseUIWindow();
             else
                 ShowIngameUI(InGameUI.Pause);
         }

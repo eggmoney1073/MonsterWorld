@@ -21,11 +21,13 @@ public class UIPause : UIWindowBase
 
     public override void ShowUI()
     {
+        base.ShowUI();
         _pauseWindow.SetActive(true);
     }
 
     public override void HideUI()
     {
+        base.HideUI();
         _pauseWindow.SetActive(false);
     }
 }

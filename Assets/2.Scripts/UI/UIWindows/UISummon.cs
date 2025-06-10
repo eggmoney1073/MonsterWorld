@@ -29,6 +29,7 @@ public class UISummon : UIWindowBase
 
     public override void ShowUI()
     {
+        base.ShowUI();
         _summonWindow.SetActive(true);
 
         for (int i = 0; i < 5; i++)
@@ -43,6 +44,7 @@ public class UISummon : UIWindowBase
 
     public override void HideUI()
     {
+        base.HideUI();
         _summonWindow.SetActive(false);
     }
 }

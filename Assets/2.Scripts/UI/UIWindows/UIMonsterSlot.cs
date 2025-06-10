@@ -22,7 +22,6 @@ public class UIMonsterSlot : MonoBehaviour
 
     public void SetMonsterSlot(Sprite monsterImage, MonsterType type, int level)
     {
-        Debug.Log("Set");
         _monsterImage.sprite = monsterImage;
         _monsterName.text = type.ToString();
         _monsterLevel.text = level.ToString();
@@ -31,6 +30,6 @@ public class UIMonsterSlot : MonoBehaviour
     public void Button_MonsterSlot()
     {
         _uiSummon.SetMonsterIndex(_slotNumber);
-        UIManager._Instance.CloseAllWindow();
+        UIManager._Instance.CloseUIWindow();
     }
 }
