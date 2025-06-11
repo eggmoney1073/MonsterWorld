@@ -47,6 +47,9 @@ public class UIMonsterState : MonoBehaviour
 
     void Update()
     {
+        if (_monster._IsFriend)
+            return;
+
         transform.LookAt(_player);
 
         if(_isUIShow)

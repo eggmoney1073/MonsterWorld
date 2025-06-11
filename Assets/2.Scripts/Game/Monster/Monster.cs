@@ -91,7 +91,9 @@ public class Monster : StateMachineBase<MonsterState>
     public MonsterType _type;
 
     public bool _IsAlive { get { return _isAlive; } }
+    public bool _IsFriend { get { return _isFriend; } }
     public float _Attack { get { return _attack; } }
+
 
     public virtual void InitMonster(MonsterType type, int level, GameObject target)
     {
@@ -109,7 +111,6 @@ public class Monster : StateMachineBase<MonsterState>
 
         _dropEXP = _monsterLevelData.DropEXP;
         _maxCaptureValue = _monsterLevelData.RequiredCaputrePower;
-
     }
 
     public virtual void Init(MonsterInfo info, MonsterAI aiInfo, GameObject target)
@@ -248,7 +249,9 @@ public class Monster : StateMachineBase<MonsterState>
         ChangeState(MonsterState.Return);
         ResetMonster();
         MonsterManager._Instance.ReturnMonster(_type, this);
-        PlayerManager._Instance.GetEXP(_dropEXP);
+
+        if(!_isFriend)
+            PlayerManager._Instance.GetEXP(_dropEXP);
     }
 
     protected void ResetMonster()
@@ -266,11 +269,6 @@ public class Monster : StateMachineBase<MonsterState>
         _capturePercentage = _playerCapturePower /_maxCaptureValue;
         _uiMonsterState.SetCaputrePercentage(_capturePercentage);
         _uiMonsterState.ResetUIMonsterState(_level);
-
-        if (_isFriend)
-        {
-            _uiMonsterState.HideState();
-        }
     }
 
 
