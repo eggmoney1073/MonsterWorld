@@ -30,6 +30,9 @@ public class PlayerManager : SingletonGameobject<PlayerManager>
 
     MonsterType[] _capturedMonsters;
 
+    MonsterType _tempMonsterData;
+    int _tempMonsterLevelData;
+
     PlayerData _playerData;
 
     public bool _IsInvincible { get { return _isInvincible; } }
@@ -63,7 +66,6 @@ public class PlayerManager : SingletonGameobject<PlayerManager>
         return _attack * scale;
     }
 
-
     public void SpawnPlayerMonster()
     {
         if (_capturedMonsters[_currentMonsterIndex] == MonsterType.None)
@@ -72,40 +74,30 @@ public class PlayerManager : SingletonGameobject<PlayerManager>
         MonsterManager._Instance.SpawnPlayerMonster(_capturedMonsters[_currentMonsterIndex], _capturedMonsterLevel[_currentMonsterIndex]);
     }
 
-    public void SetCapturedMonster(MonsterType type, int level)
+    public void SaveCapturedMonster(MonsterType type, int level)
     {
-        int index = 0;
-        MonsterType monster = _capturedMonsters[index];
+        _tempMonsterData = type;
+        _tempMonsterLevelData = level;
 
-        while(index < 5 && monster != MonsterType.None)
-        {
-            monster = _capturedMonsters[index];
-            index++;
-            Debug.Log(index);
-        }
-
-        if(index == 5)
-        {
-            // Open capture window and Select Discard Monster
-        }
-        else
-        {
-            index--;
-
-            _capturedMonsters[index] = type;
-            _capturedMonsterLevel[index] = level;
-
-            _playerData.Monster_Type[index] = type;
-            if (type != MonsterType.None)
-                UIManager._Instance.GetNewMonster(type);
-            _playerData.Monster_Level[index] = level;
-        }
+        UIManager._Instance.ShowIngameUI(InGameUI.Summon, true);
     }
 
-    public void ChangeMonster(int index)
+    public void SetCapturedMonster(int slotIndex)
+    {
+        _capturedMonsters[slotIndex] = _tempMonsterData;
+        _capturedMonsterLevel[slotIndex] = _tempMonsterLevelData;
+
+        _playerData.Monster_Type[slotIndex] = _tempMonsterData;
+        _playerData.Monster_Level[slotIndex] = _tempMonsterLevelData;
+
+        _tempMonsterData = MonsterType.None;
+        _tempMonsterLevelData = 0;
+    }
+
+    public void SetCurrentMonster(int index)
     {
         _currentMonsterIndex = index;
-        UIManager._Instance.ChangeMonster(_capturedMonsters[_currentMonsterIndex]);
+        UIManager._Instance.ChangeMonster(_capturedMonsters[index]);
     }
 
     public int GetPlayerMonsterLevel(int index)

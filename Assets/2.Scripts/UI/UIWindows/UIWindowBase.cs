@@ -6,7 +6,7 @@ public class UIWindowBase : MonoBehaviour
 {
     bool _isOpened;
 
-    public bool _isOpen { get { return _isOpened; } }
+    public bool _IsOpened { get { return _isOpened; } }
 
     public virtual void Init()
     {
@@ -23,7 +23,7 @@ public class UIWindowBase : MonoBehaviour
         _isOpened = true;
         InGameManager._Instance.PauseGame();
         InGameManager._Instance.CursorVisibleControl(true);
-        UIManager._Instance._IsPause = _isOpen;
+        UIManager._Instance._IsPause = _isOpened;
     }
 
     public virtual void HideUI()
@@ -31,6 +31,6 @@ public class UIWindowBase : MonoBehaviour
         _isOpened = false;
         InGameManager._Instance.ResumeGame();
         InGameManager._Instance.CursorVisibleControl(false);
-        UIManager._Instance._IsPause = _isOpen;
+        UIManager._Instance._IsPause = _isOpened;
     }
 }

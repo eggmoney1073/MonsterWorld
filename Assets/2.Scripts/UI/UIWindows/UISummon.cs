@@ -6,8 +6,17 @@ using UnityEngine;
 public class UISummon : UIWindowBase
 {
     [SerializeField] Sprite[] _monsterSprites;
+    [SerializeField] GameObject _informationGO;
+
     UIMonsterSlot[] _monsterSlots;
     GameObject _summonWindow;
+
+    bool _isSelectState;
+
+    int _monsterIndex;
+
+    public int _MonsterIndex { get { return _monsterIndex; } set { _monsterIndex = value; } }
+    public bool _IsSelectState { get { return _isSelectState; } set { _isSelectState = value; } }
 
     public override void Init()
     {
@@ -22,15 +31,11 @@ public class UISummon : UIWindowBase
         HideUI();
     }
 
-    public void SetMonsterIndex(int index)
-    {
-        PlayerManager._Instance.ChangeMonster(index);
-    }
-
     public override void ShowUI()
     {
         base.ShowUI();
         _summonWindow.SetActive(true);
+        _informationGO.SetActive(_isSelectState);
 
         for (int i = 0; i < 5; i++)
         {
@@ -38,6 +43,7 @@ public class UISummon : UIWindowBase
             MonsterType type = PlayerManager._Instance.GetPlayerMonsterType(i);
             Sprite image = _monsterSprites[(int)type];
 
+            _monsterSlots[i]._IsSelectState = _isSelectState;
             _monsterSlots[i].SetMonsterSlot(image, type, level);
         }
     }

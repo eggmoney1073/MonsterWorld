@@ -240,7 +240,7 @@ public class Monster : StateMachineBase<MonsterState>
     public void Captured()
     {
         Dead();
-        PlayerManager._Instance.SetCapturedMonster(_type, _level);
+        PlayerManager._Instance.SaveCapturedMonster(_type, _level);
     }
 
     void Dead()

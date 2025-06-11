@@ -12,9 +12,7 @@ public class MonsterManager : SingletonGameobject<MonsterManager>
     Monster _playerMonster;
 
     GameObject[] _monsterPrefabs;
-    GameObject _uiMonsterPrefab;
     Dictionary<MonsterType, GameObjectPool<Monster>> _monsterPools;
-    GameObjectPool<UIMonsterState> _monsterStatePool;
 
     TableBase _monsterTalbe;
     TableBase _monsterLevelTalbe;

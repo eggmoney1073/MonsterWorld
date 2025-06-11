@@ -11,8 +11,11 @@ public class UIMonsterSlot : MonoBehaviour
     [SerializeField] TextMeshProUGUI _monsterName;
     [SerializeField] TextMeshProUGUI _monsterLevel;
 
+    bool _isSelectState;
     int _slotNumber;
     UISummon _uiSummon;
+
+    public bool _IsSelectState {  get { return _isSelectState; } set { _isSelectState = value; } }
 
     public void InitSlot(int slotNumber, UISummon uiSummon)
     {
@@ -29,7 +32,16 @@ public class UIMonsterSlot : MonoBehaviour
 
     public void Button_MonsterSlot()
     {
-        _uiSummon.SetMonsterIndex(_slotNumber);
-        UIManager._Instance.CloseUIWindow();
+        if (_isSelectState)
+        {
+            PlayerManager._Instance.SetCapturedMonster(_slotNumber);
+            UIManager._Instance.CloseUIWindow();
+        }
+        else
+        {
+            _uiSummon._MonsterIndex = _slotNumber;
+            PlayerManager._Instance.SetCurrentMonster(_slotNumber);
+            UIManager._Instance.CloseUIWindow();
+        }
     }
 }

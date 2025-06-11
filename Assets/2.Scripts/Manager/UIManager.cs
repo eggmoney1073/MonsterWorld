@@ -23,11 +23,17 @@ public class UIManager : SingletonGameobject<UIManager>
     public bool _GameOver { get { return _isGameOver; } set { _isGameOver = value; } }
     public bool _IsPause { get { return _isPause; } set { _isPause = value; } }
 
-    public void ShowIngameUI(InGameUI ui)
+    public void ShowIngameUI(InGameUI ui, bool isSelectState = false)
     {
-        _openUIWindow = _ingameUIWindows[ui];
-        _openUIWindow.ShowUI();
+        _openUIWindow = _ingameUIWindows[ui];        
 
+        if(ui == InGameUI.Summon)
+        {
+            UISummon uiSummon = (UISummon)_openUIWindow;
+            uiSummon._IsSelectState = isSelectState;
+        }
+
+        _openUIWindow.ShowUI();
         InGameManager._Instance.PauseGame();
         _isPause = true;
     }
