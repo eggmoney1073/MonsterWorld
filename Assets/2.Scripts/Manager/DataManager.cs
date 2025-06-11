@@ -22,7 +22,10 @@ public class DataManager : SingletonDontDestroyOnLoad<DataManager>
     {
         base.Awake();
 
-        _path = Application.persistentDataPath + "/SaveData/";
+        _path = Application.persistentDataPath + "/SaveData";
+        if (!Directory.Exists(_path))
+            Directory.CreateDirectory(_path);
+        _path += "/";
         Debug.Log(_path);
 
         _newData = new PlayerData()

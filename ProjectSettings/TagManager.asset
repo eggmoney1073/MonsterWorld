@@ -8,6 +8,11 @@ TagManager:
   - EnemyMonster
   - Monster
   - PlayerMonster
+  - UIPlayer
+  - Map
+  - SpawnFactory
+  - MapObject
+  - Environoment
   layers:
   - Default
   - TransparentFX
@@ -15,7 +20,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - UIPlayer
   - 
   - 
   - 

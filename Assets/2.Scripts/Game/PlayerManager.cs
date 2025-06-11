@@ -196,6 +196,7 @@ public class PlayerManager : SingletonGameobject<PlayerManager>
         _currentHP -= damage;
         SetHP();
         _cameraController.ShakeCamera(0.5f);
+        UIPlayerWindow._Instance.UIPlayerGetHit();
 
         if (_currentHP <= 0)
         {
