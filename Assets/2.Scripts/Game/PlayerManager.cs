@@ -11,6 +11,7 @@ public class PlayerManager : SingletonGameobject<PlayerManager>
 
     bool _isGameOver;
     bool _isInvincible;
+    bool _isFriendMonsterSpawned;
 
     int _currentMonsterIndex;
     int _level;

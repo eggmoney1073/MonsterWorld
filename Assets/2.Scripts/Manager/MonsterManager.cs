@@ -64,8 +64,7 @@ public class MonsterManager : SingletonGameobject<MonsterManager>
     {
         if (_isPlayerMonsterSpawned)
         {
-            // Despawn Player Monster
-            return;
+            _playerMonster.Dead();
         }
 
         string path = "Monsters/Monster";
@@ -74,13 +73,10 @@ public class MonsterManager : SingletonGameobject<MonsterManager>
         GameObject monsterGO = Instantiate(prefab, transform);
         Monster monster = monsterGO.GetComponent<Monster>();
 
-
-
         monster.InitMonster(type, level, null);
 
         _playerMonster = monster;
         _playerMonster.gameObject.tag = "PlayerMonster";
-        //_playerMonster.transform.position = _playerGO.transform.position + _playerGO.transform.right;
 
         _playerMonster.SpawnFriendMonster(_playerGO.transform.position + _playerGO.transform.right);
 
@@ -89,9 +85,7 @@ public class MonsterManager : SingletonGameobject<MonsterManager>
             _playerMonster.SetTarget(_monstersOnBattle[0].gameObject);
             _playerMonster.StartBattle();
         }
-        //else
-        //    _playerMonster.InitMonster(type, null);
-
+        _isPlayerMonsterSpawned = true;
     }
 
     public void SetEnemyOnBattle(Monster monster)

@@ -244,7 +244,7 @@ public class Monster : StateMachineBase<MonsterState>
         PlayerManager._Instance.SaveCapturedMonster(_type, _level);
     }
 
-    void Dead()
+    public void Dead()
     {
         ChangeState(MonsterState.Return);
         ResetMonster();
