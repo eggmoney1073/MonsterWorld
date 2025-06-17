@@ -92,4 +92,13 @@ public class Skill_Ball : Skill
         _ball.localScale = _startScale;
         _ball.transform.localPosition = Vector3.up * 3;
     }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag(_targetTag))
+        {
+            PlayerManager._Instance.Damaged(_caster.GetComponent<Monster>()._Attack);
+            FinishSkill();
+        }
+    }
 }

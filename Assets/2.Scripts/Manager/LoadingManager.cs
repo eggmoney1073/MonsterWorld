@@ -14,26 +14,15 @@ public class LoadingManager : SingletonDontDestroyOnLoad<LoadingManager>
 {
     #region Contants and Fields
 
-    [SerializeField]
-    Image _loadingBar;
-
-    [SerializeField]
-    AsyncOperation _loadingState;
-
-    [SerializeField]
-    GameObject _loadingBarGameObject;
-
-    [SerializeField]
-    Image _loadingBG;
+    [SerializeField] Image _loadingBar;
+    [SerializeField] AsyncOperation _loadingState;
+    [SerializeField] GameObject _loadingBarGameObject;
+    [SerializeField] Image _loadingBG;
 
     SceneState _currentState = SceneState.Title;
     SceneState _loadState = SceneState.None;
 
     float _loadingProcess;
-
-    #endregion
-
-    #region Public Properties
 
     #endregion
 
@@ -61,12 +50,7 @@ public class LoadingManager : SingletonDontDestroyOnLoad<LoadingManager>
     }
     #endregion
 
-    #region Event Handler Methods
-    // 이벤트 핸들러
-    #endregion
-
     #region Methods
-    // 내부에서만 참조하는 메쏘드
 
     void SetLoadingImage()
     {

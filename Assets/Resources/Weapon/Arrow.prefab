@@ -132,7 +132,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _headPos: {fileID: 3058763930483292540}
   _arrowMoveSpeed: 20
-  _arrowRotSpeed: 8
+  _arrowRotSpeed: 10
   _moveTime: 3
 --- !u!136 &6884118442414012676
 CapsuleCollider:

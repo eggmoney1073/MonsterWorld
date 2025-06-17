@@ -156,19 +156,23 @@ public class InGameManager : SingletonGameobject<InGameManager>
         path = "UI/";
         prefab = Resources.Load(path + "UIInventoryCanvas") as GameObject;
 
-        //path = "SpawnFactory/";
-        //int monsterTypeCount = (int)MonsterType.Max;
-        //GameObject map = GameObject.FindGameObjectWithTag("Map");
+        path = "SpawnFactory/";
+        int monsterTypeCount = (int)MonsterType.Max;
+        GameObject map = GameObject.FindGameObjectWithTag("Map");
 
-        //_spawnManagers = new MonsterSpawnManager[monsterTypeCount + 1];
+        _spawnManagers = new MonsterSpawnManager[monsterTypeCount + 1];
 
-        //for (int i = 1; i < monsterTypeCount; i++)
-        //{
-        //    prefab = Resources.Load(path + "SpawnFactory_" + ((MonsterType)i).ToString()) as GameObject;
-        //    Transform point = map.transform.GetChild(2).GetChild(i - 1);
-        //    _spawnManagers[i] = Instantiate(prefab, point.position, point.rotation, transform).GetComponent<MonsterSpawnManager>();
-        //    _spawnManagers[i].InitSpawnManager();
-        //}
+        for (int i = 1; i < monsterTypeCount; i++)
+        {
+            prefab = Resources.Load(path + "SpawnFactory_" + ((MonsterType)i).ToString()) as GameObject;
+            Transform point = map.transform.GetChild(2).GetChild(i - 1);
+
+            MonsterSpawnManager monsterSpawnFactory = Instantiate(prefab, point.position, point.rotation).GetComponent<MonsterSpawnManager>();
+            monsterSpawnFactory.transform.SetParent(transform);
+            monsterSpawnFactory.InitSpawnManager();
+
+            _spawnManagers[i] = monsterSpawnFactory;
+        }
 
         //============================
 

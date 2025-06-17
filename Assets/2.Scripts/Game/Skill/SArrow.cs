@@ -47,7 +47,7 @@ public class SArrow : MonoBehaviour
                 _checkTime += Time.deltaTime;
                 if (_checkTime > _moveMaxTime)
                 { 
-                    _isAttackFinish = true;
+                    FinishSkill();
                 }
                 break;
         }
@@ -78,7 +78,7 @@ public class SArrow : MonoBehaviour
     public void MoveToTarget()
     {
         transform.LookAt(_target);
-        _collider.enabled = true;
+        
         _currentState = ArrowState.MoveToTarget;
     }
 
@@ -90,19 +90,27 @@ public class SArrow : MonoBehaviour
     public void Init()
     {
         _isAttackFinish = false;
+        _collider.enabled = true;
+        
+        transform.localPosition = Vector3.zero;
+        transform.localRotation = Quaternion.Euler(new Vector3(0, 90, 0));        
+    }
+
+    public void FinishSkill()
+    {
+        _isAttackFinish = true;
+        _collider.enabled = false;
         _checkTime = 0;
 
-        _collider.enabled = false;
-        transform.localPosition = Vector3.zero;
-        transform.localRotation = Quaternion.Euler(new Vector3(0, 90, 0));
         gameObject.SetActive(false);
     }
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag(_target.gameObject.tag))
         {
+            FinishSkill();
             _skillArrow.TargetHit(other.gameObject);
-            Init();
         }
     }
 }

@@ -23,7 +23,7 @@ public class Skill_Arrow : Skill
     {
         if (_targetTag == "Player")
         {
-            // Player Damaged
+            PlayerManager._Instance.Damaged(_caster.GetComponent<Monster>()._Attack);
         }
         else if (_targetTag == "Monster" || _targetTag == "EnemyMonster")
         {
@@ -75,8 +75,7 @@ public class Skill_Arrow : Skill
 
             for (int i = 0; i < 3; i++)
             {
-                if (!_arrows[i]._IsAttackFinish)
-                    isFinish = false;
+                isFinish = _arrows[i]._IsAttackFinish;
             }
 
             if (isFinish)

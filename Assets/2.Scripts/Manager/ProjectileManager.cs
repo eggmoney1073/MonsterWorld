@@ -10,6 +10,11 @@ public class ProjectileManager : SingletonGameobject<ProjectileManager>
     [SerializeField]GameObject[] _projectilePrefabs;
     Dictionary<ProjectileType, GameObjectPool<Projectile>> _projectilePools;
 
+    void Start()
+    {
+        Init();
+    }
+
     public void Init()
     {
         string path = "Weapon/";

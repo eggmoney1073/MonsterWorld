@@ -29,4 +29,12 @@ public class BowController : MonoBehaviour
         _aim = Camera.main.GetComponent<CameraController>()._Aim;
         _type = ProjectileType.Arrow;
     }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.U))
+        {
+            ShootBow();
+        }
+    }
 }

@@ -57,6 +57,33 @@ public class PlayerController : MonoBehaviour
         _animator.SetBool("Respawn",true);
     }
 
+    public void Init()
+    {
+        _isMove = false;
+        _isZoom = false;
+        _outLineOn = false;
+
+        _camera = Camera.main;
+        _cameraController = _camera.GetComponent<CameraController>();
+        _playerModel = GetComponent<Transform>();
+        _animator = GetComponent<Animator>();
+        _characterController = GetComponent<CharacterController>();
+
+        // Instance Weapon
+        int weaponCount = (int)PlayerWeapon.Max;
+        _weapons = new GameObject[weaponCount];
+        string path = "Weapon/";
+        for (int i = 0; i < weaponCount; i++)
+        {
+            GameObject prefab = Resources.Load(path + ((PlayerWeapon)i).ToString()) as GameObject;
+            _weapons[i] = Instantiate(prefab, _weaponPos);
+            _weapons[i].SetActive(false);
+        }
+        _gun = _weapons[(int)PlayerWeapon.Gun].GetComponent<GunController>();
+        _bow = _weapons[(int)PlayerWeapon.Bow].GetComponent<BowController>();
+        _ball = _weapons[(int)PlayerWeapon.Ball].GetComponent<BallController>();
+    }
+
     #endregion
 
     #region Event Handler Methods
@@ -86,33 +113,6 @@ public class PlayerController : MonoBehaviour
     #endregion
 
     #region Methods
-
-    public void Init()
-    {
-        _isMove = false;
-        _isZoom = false;
-        _outLineOn = false;
-
-        _camera = Camera.main;
-        _cameraController = _camera.GetComponent<CameraController>();
-        _playerModel = GetComponent<Transform>();
-        _animator = GetComponent<Animator>();
-        _characterController = GetComponent<CharacterController>();
-
-        // Instance Weapon
-        int weaponCount = (int)PlayerWeapon.Max;
-        _weapons = new GameObject[weaponCount];
-        string path = "Weapon/";
-        for (int i = 0; i < weaponCount; i++)
-        {
-            GameObject prefab = Resources.Load(path + ((PlayerWeapon)i).ToString()) as GameObject;
-            _weapons[i] = Instantiate(prefab, _weaponPos);
-            _weapons[i].SetActive(false);
-        }
-        _gun = _weapons[(int)PlayerWeapon.Gun].GetComponent<GunController>();
-        _bow = _weapons[(int)PlayerWeapon.Bow].GetComponent<BowController>();
-        _ball = _weapons[(int)PlayerWeapon.Ball].GetComponent<BallController>();
-    }
 
     void Move()
     {
