@@ -176,8 +176,8 @@ MonoBehaviour:
   _monsterModel: {fileID: 0}
   _player: {fileID: 0}
   _type: 0
-  _checkDistance: 5
-  _attackDistance: 3
+  _checkDistance: 10
+  _attackDistance: 7
   _maxHealthPoint: 3
   _monsterType: 4
   _stopMoveTime: 3

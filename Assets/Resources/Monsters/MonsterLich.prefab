@@ -558,8 +558,8 @@ MonoBehaviour:
   _monsterModel: {fileID: 0}
   _player: {fileID: 0}
   _type: 0
-  _checkDistance: 5
-  _attackDistance: 3
+  _checkDistance: 20
+  _attackDistance: 12
   _maxHealthPoint: 3
   _monsterType: 3
   _stopMoveTime: 3
@@ -567,7 +567,7 @@ MonoBehaviour:
   _moveSpeed: 6
   _chaseSpeed: 8
   _chaseDistance: 50
-  _checkDistanceOnBattle: 20
+  _checkDistanceOnBattle: 30
   _returnSpeed: 12
 --- !u!195 &3689824369782617006
 NavMeshAgent:
