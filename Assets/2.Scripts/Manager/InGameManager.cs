@@ -10,7 +10,7 @@ public class InGameManager : SingletonGameobject<InGameManager>
     {
         Init,
         Play,
-        Puase,
+        Pause,
         GameOver,
 
         Max
@@ -36,7 +36,7 @@ public class InGameManager : SingletonGameobject<InGameManager>
     Camera _camera;
 
     public GameObject _Player { get { return _playerGO; } }
-    public bool _IsPause { get { return _currentState == InGameState.Puase; } }
+    public bool _IsPause { get { return _currentState == InGameState.Pause; } }
 
     public bool _IsGameOver { get { return _currentState == InGameState.GameOver; } }
 
@@ -65,7 +65,7 @@ public class InGameManager : SingletonGameobject<InGameManager>
     public void PauseGame()
     {
         SaveGame();
-        _currentState = InGameState.Puase;
+        _currentState = InGameState.Pause;
         Time.timeScale = 0;
     }
 
@@ -107,8 +107,11 @@ public class InGameManager : SingletonGameobject<InGameManager>
 
         // Player =====================
 
-        string path = "Player";
-        GameObject prefab = Resources.Load(path) as GameObject;
+        GameObject prefab = Resources.Load("Player") as GameObject;
+
+        if (prefab == null)
+            Debug.Log("Player prefab is null");
+
         _playerGO = Instantiate(prefab, _playerStartPoint.position, _playerStartPoint.rotation);
         _player = _playerGO.GetComponent<PlayerController>();
         _player.Init();
@@ -118,13 +121,23 @@ public class InGameManager : SingletonGameobject<InGameManager>
 
         // Managers ===================
 
-        path = "InGameManagers/";
+        string path = "InGameManagers/";
 
         prefab = Resources.Load(path + "TableManager") as GameObject;
+
+        if (prefab == null)
+            Debug.Log("TableManager prefab is null");
+
         _tableManager = Instantiate(prefab, transform).GetComponent<GameTableManager>();
         _tableManager.AllLoadTables();
 
+
+
         prefab = Resources.Load(path + "GameUI") as GameObject;
+
+        if (prefab == null)
+            Debug.Log("GameUI prefab is null");
+
         _uiManager = Instantiate(prefab).GetComponent<UIManager>();
         _uiManager.gameObject.SetActive(true);
         _uiManager.Init();
@@ -132,19 +145,43 @@ public class InGameManager : SingletonGameobject<InGameManager>
         _playerManager = _playerGO.GetComponent<PlayerManager>();
         _playerManager.Init();
 
+
+
         prefab = Resources.Load(path + "MonsterManager") as GameObject;
+
+        if (prefab == null)
+            Debug.Log("MonsterManager prefab is null");
+
         _monsterManager = Instantiate(prefab, transform).GetComponent<MonsterManager>();
         _monsterManager.InitMonsterManager();
 
+
+
         prefab = Resources.Load(path + "ProjectileManager") as GameObject;
+
+        if (prefab == null)
+            Debug.Log("ProjectileManager prefab is null");
+
         _projectileManager = Instantiate(prefab, transform).GetComponent<ProjectileManager>();
         _projectileManager.Init();
 
+
+
         prefab = Resources.Load(path + "SkillManager") as GameObject;
+
+        if (prefab == null)
+            Debug.Log("SkillManager prefab is null");
+
         _skillManager = Instantiate(prefab, transform).GetComponent<SkillManager>();
         _skillManager.InitSkillManager();
 
+
+
         prefab = Resources.Load(path + "EffectManger") as GameObject;
+
+        if (prefab == null)
+            Debug.Log("EffectManger prefab is null");
+
         _effectManager = Instantiate(prefab).GetComponent<EffectManager>();
         _effectManager.gameObject.SetActive(true);
         _effectManager.Init();
@@ -152,9 +189,6 @@ public class InGameManager : SingletonGameobject<InGameManager>
         _uiManager.LateInit();
 
         _camera.transform.position = _player.transform.position + (Vector3.up * 3);
-
-        path = "UI/";
-        prefab = Resources.Load(path + "UIInventoryCanvas") as GameObject;
 
         path = "SpawnFactory/";
         int monsterTypeCount = (int)MonsterType.Max;
@@ -165,6 +199,10 @@ public class InGameManager : SingletonGameobject<InGameManager>
         for (int i = 1; i < monsterTypeCount; i++)
         {
             prefab = Resources.Load(path + "SpawnFactory_" + ((MonsterType)i).ToString()) as GameObject;
+
+            if (prefab == null)
+                Debug.Log("SpawnFactory_" + ((MonsterType)i).ToString() + "prefab is null");
+
             Transform point = map.transform.GetChild(2).GetChild(i - 1);
 
             MonsterSpawnManager monsterSpawnFactory = Instantiate(prefab, point.position, point.rotation).GetComponent<MonsterSpawnManager>();
