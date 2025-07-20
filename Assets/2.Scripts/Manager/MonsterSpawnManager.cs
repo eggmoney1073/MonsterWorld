@@ -16,12 +16,11 @@ public class MonsterSpawnManager : MonoBehaviour
     [SerializeField] Color _gizmoLineColor = Color.red;
 
     bool _isSpawn = false;
+    bool _isDespawn;
 
     int _childCount;
 
     float _checkTime = 0;
-    float _minLevel;
-    float _maxLevel;
 
     Transform[] _patrolPoses;
     List<Monster> _aliveMonsters;
@@ -33,6 +32,8 @@ public class MonsterSpawnManager : MonoBehaviour
 
     public void InitSpawnManager()
     {
+        _isDespawn = false;
+
         _aliveMonsters = new List<Monster>();
         _childCount = transform.childCount;
 
@@ -43,6 +44,11 @@ public class MonsterSpawnManager : MonoBehaviour
 
     void Update()
     {
+        if (_isDespawn)
+        {
+            return;
+        }
+
         if (!_isSpawn)
         {
             _checkTime += Time.deltaTime;
@@ -94,8 +100,18 @@ public class MonsterSpawnManager : MonoBehaviour
             int index = Random.Range(0, _childCount);
 
             monster.transform.position = _patrolPoses[index].position;
-            monster.SpawnEnemyMonster(index, _patrolPoses);
+            monster.SpawnEnemyMonster(index, _patrolPoses, this);
             _aliveMonsters.Add(monster);
+        }
+    }
+
+    public void DespawnAllMonsters()
+    {
+        int monsterCount = _aliveMonsters.Count;
+
+        for (int i = 0; i < monsterCount; i++)
+        {
+
         }
     }
 }

@@ -10,6 +10,8 @@ public class Monster : StateMachineBase<MonsterState>
 
     public struct MonsterAI
     {
+        public float StopMoveTime;
+
         public float PatrolSpeed;
         public float ChaseSpeed;
         public float ReturnSpeed;
@@ -32,8 +34,8 @@ public class Monster : StateMachineBase<MonsterState>
 
     protected bool _isAlive;
     protected bool _isOnBattle;
-    // Test
-    public bool _isFriend = false;
+
+    protected bool _isFriend = false;
 
     protected int _patrolIndex = 0;
     protected int _skillIndex;
@@ -90,12 +92,16 @@ public class Monster : StateMachineBase<MonsterState>
 
     public MonsterType _type;
 
+    protected Dictionary<MonsterState, StateFunction> _friendStateEnter;
+    protected Dictionary<MonsterState, StateFunction> _friendStateUpdate;
+    protected Dictionary<MonsterState, StateFunction> _friendStateExit;
+
     public bool _IsAlive { get { return _isAlive; } }
     public bool _IsFriend { get { return _isFriend; } }
     public float _Attack { get { return _attack; } }
 
 
-    public virtual void InitMonster(MonsterType type, int level, GameObject target)
+    public virtual void SetInitialMonster(MonsterType type, int level, GameObject target)
     {
         _type = type;
         _level = level;
@@ -116,6 +122,10 @@ public class Monster : StateMachineBase<MonsterState>
     public virtual void Init(MonsterInfo info, MonsterAI aiInfo, GameObject target)
     {
         InitStateMachine();
+
+        _friendStateEnter = new Dictionary<MonsterState, StateFunction>();
+        _friendStateUpdate = new Dictionary<MonsterState, StateFunction>();
+        _friendStateExit = new Dictionary<MonsterState, StateFunction>();
 
         _target = target;
         _skillIndex = 0;
@@ -176,7 +186,7 @@ public class Monster : StateMachineBase<MonsterState>
             ChangeState(MonsterState.Idle);
     }
 
-    public void SpawnEnemyMonster(int startIndex, Transform[] patrols)
+    public void SpawnEnemyMonster(int startIndex, Transform[] patrols, MonsterSpawnManager spawnFactory)
     {
         _isAlive = true;
         gameObject.SetActive(true);
@@ -250,8 +260,7 @@ public class Monster : StateMachineBase<MonsterState>
         ResetMonster();
         MonsterManager._Instance.ReturnMonster(_type, this);
 
-        if(!_isFriend)
-            PlayerManager._Instance.GetEXP(_dropEXP);
+        PlayerManager._Instance.GetEXP(_dropEXP);
     }
 
     protected void ResetMonster()
@@ -266,27 +275,95 @@ public class Monster : StateMachineBase<MonsterState>
         _prevState = MonsterState.Idle;
         _currentState = MonsterState.Idle;
 
-        _capturePercentage = _playerCapturePower /_maxCaptureValue;
+        _capturePercentage = _playerCapturePower / _maxCaptureValue;
         _uiMonsterState.SetCaputrePercentage(_capturePercentage);
         _uiMonsterState.ResetUIMonsterState(_level);
     }
 
-
-    #region [ Update Base ]
-
-    protected void UpdateBaseIdle(float stopMoveTime)
+    protected void InitStateFunction()
     {
-        if (_isFriend)
+        // Enemy
+        SetState(_stateEnter, MonsterState.Idle, () =>
         {
-            if (Vector3.Distance(_player.transform.position, transform.position) > 3)
-                ChangeState(MonsterState.Patrol);
-        }
-        else
+            _animator.SetBool("IsMove", false);
+            _animator.SetBool("IsBattle", false);
+
+            _agent.ResetPath();
+        });
+        SetState(_stateEnter, MonsterState.Patrol, () =>
+        {
+            _animator.SetBool("IsMove", true);
+
+            Vector3 destination;
+
+            destination = _patrolsTFs[_patrolIndex].position;
+
+            _agent.speed = _PatrolSpeed;
+            _agent.ResetPath();
+            _agent.SetDestination(destination);
+        });
+        SetState(_stateEnter, MonsterState.Chase, () =>
+        {
+            _animator.SetBool("IsMove", true);
+            _animator.SetBool("IsBattle", true);
+
+            Vector3 destination = _target.transform.position;
+
+            _startPos = transform.position;
+
+            _agent.ResetPath();
+            _agent.speed = _ChaseSpeed;
+            _agent.SetDestination(destination);
+
+            if (!_isOnBattle)
+                StartBattle();
+        });
+        SetState(_stateEnter, MonsterState.Attack, () =>
+        {
+            _animator.SetBool("IsMove", false);
+
+            if (_skillIndex == 0)
+            {
+                _animator.SetTrigger("Skill1");
+                _skillIndex++;
+            }
+            else
+            {
+                _animator.SetTrigger("Skill2");
+                _skillIndex++;
+            }
+
+            if (_skillIndex > 1)
+                _skillIndex = 0;
+
+            _agent.ResetPath();
+            _agent.isStopped = true;
+
+
+            if (_skillIndex == 0)
+                ActiveSkill(_skill2Type);
+            else
+                ActiveSkill(_skill1Type);
+        });
+        SetState(_stateEnter, MonsterState.Return, () =>
+        {
+            Vector3 destination;
+
+            destination = _patrolsTFs[_patrolIndex].position;
+            EndBattle();
+
+            _agent.speed = _monsterAI.ReturnSpeed;
+            _agent.ResetPath();
+            _agent.SetDestination(destination);
+            transform.LookAt(destination);
+        });
+
+        SetState(_stateUpdates, MonsterState.Idle, () =>
         {
             _stateTime += Time.deltaTime;
             _checkTime = _stateTime;
 
-            if (_stateTime > stopMoveTime)
+            if (_stateTime > _monsterAI.StopMoveTime)
             {
                 _stateTime = 0;
                 ChangeState(MonsterState.Patrol);
@@ -296,28 +373,8 @@ public class Monster : StateMachineBase<MonsterState>
                 CheckTarget(_CheckDistOnBattle);
             else
                 CheckTarget(_CheckDist);
-        }
-    }
-
-    protected void UpdateBasePatrol()
-    {
-        if (_isFriend)
-        {
-            if (Vector3.Distance(_player.transform.position, transform.position) < 2)
-                ChangeState(MonsterState.Idle);
-
-
-            _checkTime += Time.deltaTime;
-            if (_checkTime > _checkTerm)
-            {
-                if (Vector3.Distance(_player.transform.position, transform.position) > 3)
-                {
-                    _checkTime = 0;
-                    _agent.SetDestination(_player.transform.position);
-                }
-            }
-        }
-        else
+        });
+        SetState(_stateUpdates, MonsterState.Patrol, () =>
         {
             Vector3 destination = _patrolsTFs[_patrolIndex].position;
 
@@ -333,158 +390,197 @@ public class Monster : StateMachineBase<MonsterState>
             }
 
             CheckTarget(_CheckDist);
-        }
-    }
-
-    protected void UpdateBaseChase()
-    {
-        _checkTime += Time.deltaTime;
-
-        if (_checkTime > _refreshDestinationOnChase)
+        });
+        SetState(_stateUpdates, MonsterState.Chase, () =>
         {
-            Vector3 destination = _target.transform.position;
+            _checkTime += Time.deltaTime;
 
-            _checkTime = 0;
+            if (_checkTime > _refreshDestinationOnChase)
+            {
+                Vector3 destination = _target.transform.position;
 
-            _agent.ResetPath();
-            _agent.SetDestination(destination);
+                _checkTime = 0;
 
-            if (Vector3.Distance(transform.position, _target.transform.position) < _AttackDist)
-                ChangeState(MonsterState.Attack);
+                _agent.ResetPath();
+                _agent.SetDestination(destination);
 
-            transform.LookAt(destination);
-        }
+                if (Vector3.Distance(transform.position, _target.transform.position) < _AttackDist)
+                    ChangeState(MonsterState.Attack);
 
+                transform.LookAt(destination);
+            }
 
-        if (!_isFriend && Vector3.Distance(transform.position, _startPos) > _ChaseDistance)
-            ChangeState(MonsterState.Return);
-    }
-    protected void UpdateBaseAttack()
-    {
-        _checkTime += Time.deltaTime;
-
-        if (_checkTime > 3)
+            if (Vector3.Distance(transform.position, _startPos) > _ChaseDistance)
+                ChangeState(MonsterState.Return);
+        });
+        SetState(_stateUpdates, MonsterState.Attack, () =>
         {
-            _checkTime = 0;
+            _checkTime += Time.deltaTime;
 
+            if (_checkTime > 3)
+            {
+                _checkTime = 0;
 
                 if (Vector3.Distance(transform.position, _target.transform.position) < _AttackDist)
                     _stateEnter[MonsterState.Attack]();
                 else
                     ChangeState(MonsterState.Chase);
 
-
-                if (!_isFriend && Vector3.Distance(transform.position, _startPos) > _ChaseDistance)
+                if (Vector3.Distance(transform.position, _startPos) > _ChaseDistance)
                     ChangeState(MonsterState.Return);
-            
-        }
-    }
-
-    protected void UpdateBaseReturn()
-    {
-        if (_agent.desiredVelocity == Vector3.zero)
+            }
+        });
+        SetState(_stateUpdates, MonsterState.Return, () =>
         {
-            if (!_isFriend)
+            if (_agent.desiredVelocity == Vector3.zero)
             {
                 _patrolIndex++;
                 if (_patrolIndex >= _patrolsTFs.Length)
                     _patrolIndex = 0;
+
+                ChangeState(MonsterState.Idle);
+            }
+        });
+
+        // Friend
+        SetState(_friendStateEnter, MonsterState.Idle, () =>
+        {
+            _animator.SetBool("IsMove", false);
+            _animator.SetBool("IsBattle", false);
+
+            _agent.ResetPath();
+        });
+        SetState(_friendStateEnter, MonsterState.Patrol, () =>
+        {
+            _animator.SetBool("IsMove", true);
+
+            Vector3 destination;
+            destination = _player.transform.position;
+
+            _agent.speed = _PatrolSpeed;
+            _agent.ResetPath();
+            _agent.SetDestination(destination);
+        });
+        SetState(_friendStateEnter, MonsterState.Chase, () =>
+        {
+            _animator.SetBool("IsMove", true);
+            _animator.SetBool("IsBattle", true);
+
+            Vector3 destination = _target.transform.position;
+
+            _startPos = transform.position;
+
+            _agent.ResetPath();
+            _agent.speed = _ChaseSpeed;
+            _agent.SetDestination(destination);
+        });
+        SetState(_friendStateEnter, MonsterState.Attack, () =>
+        {
+            _animator.SetBool("IsMove", false);
+
+            if (_skillIndex == 0)
+            {
+                _animator.SetTrigger("Skill1");
+                _skillIndex++;
+            }
+            else
+            {
+                _animator.SetTrigger("Skill2");
+                _skillIndex++;
             }
 
-            ChangeState(MonsterState.Idle);
-        }
-    }
+            if (_skillIndex > 1)
+                _skillIndex = 0;
 
-    #endregion
+            _agent.ResetPath();
+            _agent.isStopped = true;
 
-    #region [ Enter Base ]
 
-    protected void EnterBaseIdle()
-    {
-        _animator.SetBool("IsMove", false);
-        _animator.SetBool("IsBattle", false);
+            if (_skillIndex == 0)
+                ActiveSkill(_skill2Type);
+            else
+                ActiveSkill(_skill1Type);
+        });
+        SetState(_friendStateEnter, MonsterState.Return, () =>
+        {
+            Vector3 destination;
 
-        _agent.ResetPath();
-    }
-    protected void EnterBasePatrol()
-    {
-        _animator.SetBool("IsMove", true);
-
-        Vector3 destination;
-
-        if (_isFriend)
             destination = _player.transform.position;
-        else
-            destination = _patrolsTFs[_patrolIndex].position;
 
-        _agent.speed = _PatrolSpeed;
-        _agent.ResetPath();
-        _agent.SetDestination(destination);
-    }
-    protected void EnterBaseChase()
-    {
-        _animator.SetBool("IsMove", true);
-        _animator.SetBool("IsBattle", true);
+            _agent.speed = _monsterAI.ReturnSpeed;
+            _agent.ResetPath();
+            _agent.SetDestination(destination);
+            transform.LookAt(destination);
+        });
 
-        Vector3 destination = _target.transform.position;
-
-        _startPos = transform.position;
-
-        _agent.ResetPath();
-        _agent.speed = _ChaseSpeed;
-        _agent.SetDestination(destination);
-
-        if(!_isFriend && !_isOnBattle)
-            StartBattle();
-    }
-    protected void EnterBaseAttack()
-    {
-        _animator.SetBool("IsMove", false);
-
-        if (_skillIndex == 0)
+        SetState(_friendStateUpdate, MonsterState.Idle, () =>
         {
-            _animator.SetTrigger("Skill1");
-            _skillIndex++;
-        }
-        else
+            if (Vector3.Distance(_player.transform.position, transform.position) > 3)
+                ChangeState(MonsterState.Patrol);
+        });
+        SetState(_friendStateUpdate, MonsterState.Patrol, () =>
         {
-            _animator.SetTrigger("Skill2");
-            _skillIndex++;
-        }
+            if (Vector3.Distance(_player.transform.position, transform.position) < 2)
+                ChangeState(MonsterState.Idle);
 
-        if (_skillIndex > 1)
-            _skillIndex = 0;
 
-        _agent.ResetPath();
-        _agent.isStopped = true;
-    }
-
-    protected void EnterBaseReturn(float returnSpeed)
-    {
-        Vector3 destination;
-
-        if (_isFriend)
-            destination = _player.transform.position;
-        else
+            _checkTime += Time.deltaTime;
+            if (_checkTime > _checkTerm)
+            {
+                if (Vector3.Distance(_player.transform.position, transform.position) > 3)
+                {
+                    _checkTime = 0;
+                    _agent.SetDestination(_player.transform.position);
+                }
+            }
+        });
+        SetState(_friendStateUpdate, MonsterState.Chase, () =>
         {
-            destination = _patrolsTFs[_patrolIndex].position;
-            EndBattle();
-        }
+            _checkTime += Time.deltaTime;
 
-        _agent.speed = _ReturnSpeed;
-        _agent.ResetPath();
-        _agent.SetDestination(destination);
-        transform.LookAt(destination);
+            if (_checkTime > _refreshDestinationOnChase)
+            {
+                Vector3 destination = _target.transform.position;
 
+                _checkTime = 0;
+
+                _agent.ResetPath();
+                _agent.SetDestination(destination);
+
+                if (Vector3.Distance(transform.position, _target.transform.position) < _AttackDist)
+                    ChangeState(MonsterState.Attack);
+
+                transform.LookAt(destination);
+            }
+        });
+        SetState(_friendStateUpdate, MonsterState.Return, () =>
+        {
+            if (_agent.desiredVelocity == Vector3.zero)
+            {
+                ChangeState(MonsterState.Idle);
+            }
+        });
     }
-
-    #endregion
 
     protected override void ChangeState(MonsterState state)
     {
-        base.ChangeState(state);
         _checkTime = 0;
         _stateTime = 0;
+
+        if (_isFriend)
+        {
+            _prevState = _currentState;
+            _currentState = state;
+
+            if (_friendStateExit.ContainsKey(_prevState))
+                _friendStateExit[_prevState]();
+
+            if (_friendStateEnter.ContainsKey(_currentState))
+                _friendStateEnter[_currentState]();
+
+            return;
+        }
+        base.ChangeState(state);
     }
 
     protected void CheckTarget(float distance, MonsterState nextState = MonsterState.Chase)
@@ -503,6 +599,14 @@ public class Monster : StateMachineBase<MonsterState>
 
     protected override void Update()
     {
+        if (_isFriend)
+        {
+            if (_friendStateUpdate.ContainsKey(_currentState))
+                _friendStateUpdate[_currentState]();
+
+            return;
+        }
+
         if (_isAlive && _stateUpdates.ContainsKey(_currentState))
             _stateUpdates[_currentState]();
     }

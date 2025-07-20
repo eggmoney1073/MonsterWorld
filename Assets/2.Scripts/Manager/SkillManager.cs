@@ -21,9 +21,7 @@ public class SkillManager : SingletonGameobject<SkillManager>
 
     public void ReturnSkill(Skill skill)
     {
-        SkillType type = skill._SkillType;
-
-        _skillPools[type].Set(skill);
+        _skillPools[skill._SkillType].Set(skill);
     }
 
     public void InitSkillManager()

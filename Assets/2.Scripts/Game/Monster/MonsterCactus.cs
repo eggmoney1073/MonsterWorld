@@ -1,7 +1,8 @@
+using DefineEnums;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.PackageManager;
 using UnityEngine;
-using DefineEnums;
 
 public class MonsterCactus : Monster
 {
@@ -26,15 +27,17 @@ public class MonsterCactus : Monster
     [Header("Return Setting")]
     [SerializeField] float _returnSpeed = 15f;
 
-    public override void InitMonster(MonsterType type, int level, GameObject target)
+    public override void SetInitialMonster(MonsterType type, int level, GameObject target)
     {
-        base.InitMonster(type, level, target);
+        base.SetInitialMonster(type, level, target);
 
         MonsterManager._Instance.GetMonsterData(type);
 
         // юс╫ц
         MonsterAI monsterAI = new MonsterAI()
         {
+            StopMoveTime = _stopMoveTime,
+
             PatrolSpeed = _moveSpeed,
             ChaseSpeed = _chaseSpeed,
             ReturnSpeed = _returnSpeed,
@@ -51,70 +54,9 @@ public class MonsterCactus : Monster
             MaxHp = _maxHealthPoint
         };
 
-        Init(monsterInfo, monsterAI, target);
-    }
+        base.Init(monsterInfo, monsterAI, target);
 
-    public override void Init(MonsterInfo info, MonsterAI aiInfo, GameObject target)
-    {
-        base.Init(info, aiInfo, target);
-
-        SetStateUpadte(MonsterState.Idle, delegate ()
-        {
-            UpdateBaseIdle(_stopMoveTime);
-        });
-
-        SetStateUpadte(MonsterState.Patrol, delegate ()
-        {
-            UpdateBasePatrol();
-        });
-
-        SetStateUpadte(MonsterState.Chase, delegate ()
-        {
-            UpdateBaseChase();
-        });
-
-        SetStateUpadte(MonsterState.Attack, delegate ()
-        {
-            UpdateBaseAttack();
-        });
-
-        SetStateUpadte(MonsterState.Return, delegate ()
-        {
-            UpdateBaseReturn();
-        });
-
-
-
-
-        SetStateEnter(MonsterState.Idle, delegate ()
-        {
-            EnterBaseIdle();
-        });
-
-        SetStateEnter(MonsterState.Patrol, delegate ()
-        {
-            EnterBasePatrol();
-        });
-
-        SetStateEnter(MonsterState.Chase, delegate ()
-        {
-            EnterBaseChase();
-        });
-
-        SetStateEnter(MonsterState.Attack, delegate ()
-        {
-            EnterBaseAttack();
-
-            if (_skillIndex == 0)
-                ActiveSkill(_skill2Type);
-            else
-                ActiveSkill(_skill1Type);
-        });
-
-        SetStateEnter(MonsterState.Return, delegate ()
-        {
-            EnterBaseReturn(_returnSpeed);
-        });
+        InitStateFunction();
     }
 
     protected override void Update()
