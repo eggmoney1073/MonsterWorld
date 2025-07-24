@@ -7,7 +7,6 @@ using DefineStructs;
 
 public class Monster : StateMachineBase<MonsterState>
 {
-
     public struct MonsterAI
     {
         public float StopMoveTime;
@@ -38,7 +37,7 @@ public class Monster : StateMachineBase<MonsterState>
     protected bool _isFriend = false;
 
     protected int _patrolIndex = 0;
-    protected int _skillIndex;
+    protected int _skillIndex = 0;
     protected int _level;
 
     public float _hp;
@@ -78,15 +77,6 @@ public class Monster : StateMachineBase<MonsterState>
     protected SkillType _skill1Type;
     protected SkillType _skill2Type;
 
-    float _PatrolSpeed;
-    float _ChaseSpeed;
-    float _ReturnSpeed;
-
-    float _CheckDist;
-    float _CheckDistOnBattle;
-    float _AttackDist;
-    float _ChaseDistance;
-
     float _dropEXP;
 
     MonsterType _type;
@@ -99,9 +89,24 @@ public class Monster : StateMachineBase<MonsterState>
     public bool _IsFriend { get { return _isFriend; } }
     public float _Attack { get { return _attack; } }
     public MonsterType _Type { get { return _type; } }
+    public GameObject _Target { get { return _target; } set { _target = value; } }
 
+    public virtual void CommonInitialize()
+    {
+        InitStateMachine();
 
-    public virtual void SetInitialMonster(MonsterType type, int level, GameObject target)
+        _friendStateEnter = new Dictionary<MonsterState, StateFunction>();
+        _friendStateUpdate = new Dictionary<MonsterState, StateFunction>();
+        _friendStateExit = new Dictionary<MonsterState, StateFunction>();
+
+        _animator = GetComponent<Animator>();
+        _agent = GetComponent<NavMeshAgent>();
+        _monsterModel = transform.GetChild(0).gameObject;
+
+        _uiMonsterState = transform.GetChild(2).GetComponent<UIMonsterState>();        
+    }
+
+    public virtual void SetMonsterData(MonsterType type, int level, GameObject target)
     {
         _type = type;
         _level = level;
@@ -111,55 +116,26 @@ public class Monster : StateMachineBase<MonsterState>
 
         _maxHp = _monsterLevelData.Health * _monsterData.HealthScale;
         _attack = _monsterLevelData.Attack * _monsterData.AttackScale;
+        _hp = _maxHp;
 
         _skill1Type = _monsterData.Skill1;
         _skill2Type = _monsterData.Skill2;
 
         _dropEXP = _monsterLevelData.DropEXP;
         _maxCaptureValue = _monsterLevelData.RequiredCaputrePower;
+
+        _playerCapturePower = PlayerManager._Instance._CapturePower;
     }
 
-    public virtual void Init(MonsterInfo info, MonsterAI aiInfo, GameObject target)
+    public virtual void SetMonsterAI(MonsterInfo info, MonsterAI aiInfo, GameObject target)
     {
-        InitStateMachine();
-
-        _friendStateEnter = new Dictionary<MonsterState, StateFunction>();
-        _friendStateUpdate = new Dictionary<MonsterState, StateFunction>();
-        _friendStateExit = new Dictionary<MonsterState, StateFunction>();
-
-        _target = target;
-        _skillIndex = 0;
-
         _monsterInfo = info;
         _monsterAI = aiInfo;
-
-        _hp = _maxHp;
-
-        _PatrolSpeed = _monsterAI.PatrolSpeed;
-        _ChaseSpeed = _monsterAI.ChaseSpeed;
-        _ReturnSpeed = _monsterAI.ReturnSpeed;
-
-        _CheckDist = _monsterAI.NormalCheckDistance;
-        _CheckDistOnBattle = _monsterAI.BattleCheckDistance;
-        _AttackDist = _monsterAI.AttackDistance;
-        _ChaseDistance = _monsterAI.ChaseDistance;
-
-        _animator = GetComponent<Animator>();
-        _agent = GetComponent<NavMeshAgent>();
-        _monsterModel = transform.GetChild(0).gameObject;
+        _target = target;       
 
         _player = InGameManager._Instance._Player;
 
-        _uiMonsterState = transform.GetChild(2).GetComponent<UIMonsterState>();
-        _uiMonsterState.Init(_player.transform, _type.ToString(), _level);
-        _playerCapturePower = PlayerManager._Instance._CapturePower;
-
         ResetMonster();
-    }
-
-    public void SetTarget(GameObject target)
-    {
-        _target = target;
     }
 
     public void StartBattle()
@@ -189,11 +165,11 @@ public class Monster : StateMachineBase<MonsterState>
     public void SpawnEnemyMonster(int startIndex, Transform[] patrols, MonsterSpawnManager spawnFactory)
     {
         _isAlive = true;
+        _isFriend = false;
         gameObject.SetActive(true);
         _monsterModel.SetActive(true);
         _patrolsTFs = patrols;
         _patrolIndex = startIndex;
-
 
         ChangeState(MonsterState.Patrol);
     }
@@ -276,6 +252,7 @@ public class Monster : StateMachineBase<MonsterState>
         _currentState = MonsterState.Idle;
 
         _capturePercentage = _playerCapturePower / _maxCaptureValue;
+        _uiMonsterState.Init(_player.transform, _type.ToString(), _level);
         _uiMonsterState.SetCaputrePercentage(_capturePercentage);
         _uiMonsterState.ResetUIMonsterState(_level);
     }
@@ -298,7 +275,7 @@ public class Monster : StateMachineBase<MonsterState>
 
             destination = _patrolsTFs[_patrolIndex].position;
 
-            _agent.speed = _PatrolSpeed;
+            _agent.speed = _monsterAI.PatrolSpeed;
             _agent.ResetPath();
             _agent.SetDestination(destination);
         });
@@ -312,7 +289,7 @@ public class Monster : StateMachineBase<MonsterState>
             _startPos = transform.position;
 
             _agent.ResetPath();
-            _agent.speed = _ChaseSpeed;
+            _agent.speed = _monsterAI.ChaseSpeed;
             _agent.SetDestination(destination);
 
             if (!_isOnBattle)
@@ -370,9 +347,9 @@ public class Monster : StateMachineBase<MonsterState>
             }
 
             if (_prevState == MonsterState.Attack)
-                CheckTarget(_CheckDistOnBattle);
+                CheckTarget(_monsterAI.BattleCheckDistance);
             else
-                CheckTarget(_CheckDist);
+                CheckTarget(_monsterAI.NormalCheckDistance);
         });
         SetState(_stateUpdates, MonsterState.Patrol, () =>
         {
@@ -389,7 +366,7 @@ public class Monster : StateMachineBase<MonsterState>
                 ChangeState(MonsterState.Idle);
             }
 
-            CheckTarget(_CheckDist);
+            CheckTarget(_monsterAI.NormalCheckDistance);
         });
         SetState(_stateUpdates, MonsterState.Chase, () =>
         {
@@ -404,13 +381,13 @@ public class Monster : StateMachineBase<MonsterState>
                 _agent.ResetPath();
                 _agent.SetDestination(destination);
 
-                if (Vector3.Distance(transform.position, _target.transform.position) < _AttackDist)
+                if (Vector3.Distance(transform.position, _target.transform.position) < _monsterAI.AttackDistance)
                     ChangeState(MonsterState.Attack);
 
                 transform.LookAt(destination);
             }
 
-            if (Vector3.Distance(transform.position, _startPos) > _ChaseDistance)
+            if (Vector3.Distance(transform.position, _startPos) > _monsterAI.ChaseDistance)
                 ChangeState(MonsterState.Return);
         });
         SetState(_stateUpdates, MonsterState.Attack, () =>
@@ -421,12 +398,12 @@ public class Monster : StateMachineBase<MonsterState>
             {
                 _checkTime = 0;
 
-                if (Vector3.Distance(transform.position, _target.transform.position) < _AttackDist)
+                if (Vector3.Distance(transform.position, _target.transform.position) < _monsterAI.AttackDistance)
                     _stateEnter[MonsterState.Attack]();
                 else
                     ChangeState(MonsterState.Chase);
 
-                if (Vector3.Distance(transform.position, _startPos) > _ChaseDistance)
+                if (Vector3.Distance(transform.position, _startPos) > _monsterAI.ChaseDistance)
                     ChangeState(MonsterState.Return);
             }
         });
@@ -457,7 +434,7 @@ public class Monster : StateMachineBase<MonsterState>
             Vector3 destination;
             destination = _player.transform.position;
 
-            _agent.speed = _PatrolSpeed;
+            _agent.speed = _monsterAI.PatrolSpeed;
             _agent.ResetPath();
             _agent.SetDestination(destination);
         });
@@ -471,7 +448,7 @@ public class Monster : StateMachineBase<MonsterState>
             _startPos = transform.position;
 
             _agent.ResetPath();
-            _agent.speed = _ChaseSpeed;
+            _agent.speed = _monsterAI.ChaseSpeed;
             _agent.SetDestination(destination);
         });
         SetState(_friendStateEnter, MonsterState.Attack, () =>
@@ -547,7 +524,7 @@ public class Monster : StateMachineBase<MonsterState>
                 _agent.ResetPath();
                 _agent.SetDestination(destination);
 
-                if (Vector3.Distance(transform.position, _target.transform.position) < _AttackDist)
+                if (Vector3.Distance(transform.position, _target.transform.position) < _monsterAI.AttackDistance)
                     ChangeState(MonsterState.Attack);
 
                 transform.LookAt(destination);
@@ -559,7 +536,7 @@ public class Monster : StateMachineBase<MonsterState>
             if (_checkTime > 3)
             {
                 _checkTime = 0;
-                if (Vector3.Distance(transform.position, _target.transform.position) < _AttackDist)
+                if (Vector3.Distance(transform.position, _target.transform.position) < _monsterAI.AttackDistance)
                     _friendStateEnter[MonsterState.Attack]();
                 else
                     ChangeState(MonsterState.Chase);
@@ -627,12 +604,12 @@ public class Monster : StateMachineBase<MonsterState>
         if (!_isOnBattle)
         {
             Gizmos.color = Color.blue;
-            Gizmos.DrawWireSphere(transform.position, _CheckDist);
+            Gizmos.DrawWireSphere(transform.position, _monsterAI.NormalCheckDistance);
         }
         else
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position, _CheckDistOnBattle);
+            Gizmos.DrawWireSphere(transform.position, _monsterAI.BattleCheckDistance);
         }
     }
 }

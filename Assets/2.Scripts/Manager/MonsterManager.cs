@@ -69,7 +69,7 @@ public class MonsterManager : SingletonGameobject<MonsterManager>
 
         // 오브젝트 풀에서 몬스터를 받아와서 사용
         Monster monster = _monsterPools[type].Get();
-        monster.SetInitialMonster(type, level, null);
+        monster.SetMonsterData(type, level, null);
         _playerMonster = monster;
         _playerMonster.gameObject.tag = "PlayerMonster";
 
@@ -78,7 +78,7 @@ public class MonsterManager : SingletonGameobject<MonsterManager>
         // 전투중인 몬스터 리스트에 몬스터가 있으면 전투 진입 순서대로 타겟지정
         if (_monstersOnBattle.Count > 0)
         {
-            _playerMonster.SetTarget(_monstersOnBattle[0].gameObject);
+            _playerMonster._Target = _monstersOnBattle[0].gameObject;
             _playerMonster.StartBattle();
         }
         _isPlayerMonsterSpawned = true;
@@ -89,7 +89,7 @@ public class MonsterManager : SingletonGameobject<MonsterManager>
         _monstersOnBattle.Add(monster);
         if (_playerMonster != null)
         {
-            _playerMonster.SetTarget(monster.gameObject);
+            _playerMonster._Target = monster.gameObject;
             _playerMonster.StartBattle();
         }
     }
@@ -99,7 +99,7 @@ public class MonsterManager : SingletonGameobject<MonsterManager>
         _monstersOnBattle.Remove(monster);
         if (_playerMonster != null && _monstersOnBattle.Count == 0)
         {
-            _playerMonster.SetTarget(null);
+            _playerMonster._Target = null;
             _playerMonster.EndBattle();
         }
     }
@@ -138,7 +138,7 @@ public class MonsterManager : SingletonGameobject<MonsterManager>
 
                 int level = Random.Range(minLevel, maxLevel + 1);
 
-                monster.SetInitialMonster(type, level, _playerGO);
+                monster.SetMonsterData(type, level, _playerGO);
                 //monster.SetTarget(_player);
                 monsterGO.SetActive(false);
                 return monster.GetComponent<Monster>();

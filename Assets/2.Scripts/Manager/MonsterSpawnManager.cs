@@ -24,6 +24,7 @@ public class MonsterSpawnManager : MonoBehaviour
 
     Transform[] _patrolPoses;
     List<Monster> _aliveMonsters;
+    Dictionary<int, Monster> _aliveMonsterDictionary;
 
     void Start()
     {
@@ -35,6 +36,7 @@ public class MonsterSpawnManager : MonoBehaviour
         _isDespawn = false;
 
         _aliveMonsters = new List<Monster>();
+        _aliveMonsterDictionary = new Dictionary<int, Monster>();
         _childCount = transform.childCount;
 
         _patrolPoses = new Transform[_childCount];
@@ -119,6 +121,12 @@ public class MonsterSpawnManager : MonoBehaviour
 
     public void MonsterDead(Monster monster)
     {
+        if (_aliveMonsters.Count == 0)
+            return;
 
+        if (_aliveMonsters.Contains(monster))
+        {
+            _aliveMonsters.Remove(monster);
+        }
     }
 }

@@ -21,6 +21,10 @@ public class UIMonsterState : MonoBehaviour
     public void Init(Transform player, string type, int level)
     {
         _monster = transform.parent.GetComponent<Monster>();
+        if (_monster == null)
+        {
+            Debug.LogError("UIMonsterState: Monster component not found on parent object.");
+        }
         _stateWindow = transform.GetChild(0).gameObject;
         _player = player;
         _nameTXT.text = type;

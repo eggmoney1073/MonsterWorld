@@ -1,4 +1,5 @@
 using DefineEnums;
+using DefineStructs;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.PackageManager;
@@ -27,13 +28,8 @@ public class MonsterCactus : Monster
     [Header("Return Setting")]
     [SerializeField] float _returnSpeed = 15f;
 
-    public override void SetInitialMonster(MonsterType type, int level, GameObject target)
+    public override void SetMonsterData(MonsterType type, int level, GameObject target)
     {
-        base.SetInitialMonster(type, level, target);
-
-        MonsterManager._Instance.GetMonsterData(type);
-
-        // юс╫ц
         MonsterAI monsterAI = new MonsterAI()
         {
             StopMoveTime = _stopMoveTime,
@@ -54,7 +50,9 @@ public class MonsterCactus : Monster
             MaxHp = _maxHealthPoint
         };
 
-        base.Init(monsterInfo, monsterAI, target);
+        base.CommonInitialize();
+        base.SetMonsterData(type, level, target);
+        base.SetMonsterAI(monsterInfo, monsterAI, target);
 
         InitStateFunction();
     }
