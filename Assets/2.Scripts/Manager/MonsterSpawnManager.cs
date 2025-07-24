@@ -42,6 +42,8 @@ public class MonsterSpawnManager : MonoBehaviour
             _patrolPoses[i] = transform.GetChild(i);
     }
 
+
+
     void Update()
     {
         if (_isDespawn)
@@ -113,5 +115,10 @@ public class MonsterSpawnManager : MonoBehaviour
         {
 
         }
+    }
+
+    public void MonsterDead(Monster monster)
+    {
+
     }
 }

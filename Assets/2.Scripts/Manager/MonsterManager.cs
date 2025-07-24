@@ -53,10 +53,10 @@ public class MonsterManager : SingletonGameobject<MonsterManager>
         return _monsterPools[type].Get();
     }
 
-    public void ReturnMonster(MonsterType type, Monster monster)
+    public void ReturnMonster(Monster monster)
     {
         monster.gameObject.SetActive(false);
-        _monsterPools[type].Set(monster);
+        _monsterPools[monster._Type].Set(monster);
     }
 
     public void SpawnPlayerMonster(MonsterType type, int level)

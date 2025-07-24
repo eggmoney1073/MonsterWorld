@@ -41,7 +41,6 @@ public class Monster : StateMachineBase<MonsterState>
     protected int _skillIndex;
     protected int _level;
 
-    // Tset
     public float _hp;
     protected float _maxHp;
     protected float _attack;
@@ -90,7 +89,7 @@ public class Monster : StateMachineBase<MonsterState>
 
     float _dropEXP;
 
-    public MonsterType _type;
+    MonsterType _type;
 
     protected Dictionary<MonsterState, StateFunction> _friendStateEnter;
     protected Dictionary<MonsterState, StateFunction> _friendStateUpdate;
@@ -99,6 +98,7 @@ public class Monster : StateMachineBase<MonsterState>
     public bool _IsAlive { get { return _isAlive; } }
     public bool _IsFriend { get { return _isFriend; } }
     public float _Attack { get { return _attack; } }
+    public MonsterType _Type { get { return _type; } }
 
 
     public virtual void SetInitialMonster(MonsterType type, int level, GameObject target)
@@ -258,7 +258,7 @@ public class Monster : StateMachineBase<MonsterState>
     {
         ChangeState(MonsterState.Return);
         ResetMonster();
-        MonsterManager._Instance.ReturnMonster(_type, this);
+        MonsterManager._Instance.ReturnMonster(this);
 
         PlayerManager._Instance.GetEXP(_dropEXP);
     }
@@ -553,6 +553,18 @@ public class Monster : StateMachineBase<MonsterState>
                 transform.LookAt(destination);
             }
         });
+        SetState(_friendStateUpdate, MonsterState.Attack, () =>
+        {
+            _checkTime += Time.deltaTime;
+            if (_checkTime > 3)
+            {
+                _checkTime = 0;
+                if (Vector3.Distance(transform.position, _target.transform.position) < _AttackDist)
+                    _friendStateEnter[MonsterState.Attack]();
+                else
+                    ChangeState(MonsterState.Chase);
+            }
+        });
         SetState(_friendStateUpdate, MonsterState.Return, () =>
         {
             if (_agent.desiredVelocity == Vector3.zero)
@@ -590,7 +602,6 @@ public class Monster : StateMachineBase<MonsterState>
         if (_checkTime > _checkTerm)
         {
             _checkTime = 0;
-
 
             if (_target != null && Vector3.Distance(transform.position, _target.transform.position) < distance)
                 ChangeState(nextState);

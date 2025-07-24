@@ -29,7 +29,7 @@ public class BallController : Projectile
         if (random <= percentage * 100)
         {
             _monster.Captured();
-            UIManager._Instance.GetNewMonster(_monster._type);
+            UIManager._Instance.GetNewMonster(_monster._Type);
             Debug.Log("Capture Success");
         }
         else
