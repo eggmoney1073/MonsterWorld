@@ -8,7 +8,6 @@ public class MonsterGolem : Monster
     [Header("Golem Setting")]
     [SerializeField] float _checkDistance = 5;
     [SerializeField] float _attackDistance = 3;
-    [SerializeField] float _maxHealthPoint = 3;
     [SerializeField] MonsterType _monsterType = MonsterType.Golem;
 
     [Header("Patrol Setting")]
@@ -42,15 +41,9 @@ public class MonsterGolem : Monster
             ChaseDistance = _chaseDistance
         };
 
-        MonsterInfo monsterInfo = new MonsterInfo()
-        {
-            Type = _monsterType,
-            MaxHp = _maxHealthPoint
-        };
-
         base.CommonInitialize();
         base.SetMonsterData(type, level, target);
-        base.SetMonsterAI(monsterInfo, monsterAI, target);
+        base.SetMonsterAI(monsterAI, target);
 
         InitStateFunction();
     }

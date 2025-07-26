@@ -22,11 +22,7 @@ public class Monster : StateMachineBase<MonsterState>
         public float ChaseDistance;
     }
 
-    public struct MonsterInfo
-    {
-        public MonsterType Type;
-        public float MaxHp;
-    }
+    #region [ Fields ]
 
     const float _refreshDestinationOnChase = 0.5f;
     const float _checkTerm = 0.2f;
@@ -39,57 +35,51 @@ public class Monster : StateMachineBase<MonsterState>
     protected int _patrolIndex = 0;
     protected int _skillIndex = 0;
     protected int _level;
+    protected int _spawnID;
 
-    public float _hp;
+    protected float _currentHp;
     protected float _maxHp;
     protected float _attack;
 
-    protected float _maxCaptureValue;
-    protected float _playerCapturePower;
-    public float _capturePercentage;
+    protected float _capturePercentage;
     protected float _checkTime;
     protected float _stateTime;
-    protected float _healthScale;
-    protected float _attackScale;
 
-    protected Skill _currentSkill_1;
-    protected Skill _currentSkill_2;
-
-    protected UIMonsterState _uiMonsterState;
-
-    public GameObject _target;
-    public GameObject _monsterModel;
-    public GameObject _player;
-
-    protected Transform[] _patrolsTFs;
     protected Vector3 _startPos;
 
-    protected Animator _animator;
+    protected MonsterType _type;
 
+    protected GameObject _target;
+    protected GameObject _monsterModel;
+    protected GameObject _player;
+    protected Transform[] _patrolsTFs;
+    protected Animator _animator;
     protected NavMeshAgent _agent;
 
-    protected MonsterAI _monsterAI;
-    protected MonsterInfo _monsterInfo;
+    protected UIMonsterState _uiMonsterState;
+    protected MonsterSpawnManager _monsterSpawnFactory;
 
+    protected MonsterAI _monsterAI;
     protected MonsterData _monsterData;
     protected MonsterLevelData _monsterLevelData;
-
-    protected SkillType _skill1Type;
-    protected SkillType _skill2Type;
-
-    float _dropEXP;
-
-    MonsterType _type;
 
     protected Dictionary<MonsterState, StateFunction> _friendStateEnter;
     protected Dictionary<MonsterState, StateFunction> _friendStateUpdate;
     protected Dictionary<MonsterState, StateFunction> _friendStateExit;
 
+    #endregion
+
+    #region [ Properties ]
     public bool _IsAlive { get { return _isAlive; } }
     public bool _IsFriend { get { return _isFriend; } }
     public float _Attack { get { return _attack; } }
+    public float _CurrentHp { get { return _currentHp; } }
+    public float _CapturePercentage { get { return _capturePercentage; } }
     public MonsterType _Type { get { return _type; } }
     public GameObject _Target { get { return _target; } set { _target = value; } }
+    public int _SpawnID { get { return _spawnID; } }
+
+    #endregion
 
     public virtual void CommonInitialize()
     {
@@ -116,20 +106,11 @@ public class Monster : StateMachineBase<MonsterState>
 
         _maxHp = _monsterLevelData.Health * _monsterData.HealthScale;
         _attack = _monsterLevelData.Attack * _monsterData.AttackScale;
-        _hp = _maxHp;
-
-        _skill1Type = _monsterData.Skill1;
-        _skill2Type = _monsterData.Skill2;
-
-        _dropEXP = _monsterLevelData.DropEXP;
-        _maxCaptureValue = _monsterLevelData.RequiredCaputrePower;
-
-        _playerCapturePower = PlayerManager._Instance._CapturePower;
+        _currentHp = _maxHp;
     }
 
-    public virtual void SetMonsterAI(MonsterInfo info, MonsterAI aiInfo, GameObject target)
+    public virtual void SetMonsterAI(MonsterAI aiInfo, GameObject target)
     {
-        _monsterInfo = info;
         _monsterAI = aiInfo;
         _target = target;       
 
@@ -162,8 +143,10 @@ public class Monster : StateMachineBase<MonsterState>
             ChangeState(MonsterState.Idle);
     }
 
-    public void SpawnEnemyMonster(int startIndex, Transform[] patrols, MonsterSpawnManager spawnFactory)
+    public void SpawnEnemyMonster(int spawndID, int startIndex, Transform[] patrols, MonsterSpawnManager spawnFactory)
     {
+        _spawnID = spawndID;
+        _monsterSpawnFactory = spawnFactory;
         _isAlive = true;
         _isFriend = false;
         gameObject.SetActive(true);
@@ -186,10 +169,10 @@ public class Monster : StateMachineBase<MonsterState>
 
     public void Damaged(float damage)
     {
-        _hp -= damage;
-        _uiMonsterState.SetHpPercentage(_hp / _maxHp);
-        _playerCapturePower = PlayerManager._Instance._CapturePower;
-        _capturePercentage = _playerCapturePower / (_maxCaptureValue + (10 * (_hp / _maxHp)));
+        _currentHp -= damage;
+        _uiMonsterState.SetHpPercentage(_currentHp / _maxHp);
+        float capturePower = PlayerManager._Instance._CapturePower;
+        _capturePercentage = capturePower / (_monsterLevelData.RequiredCaputrePower + (10 * (_currentHp / _maxHp)));
         //Debug.LogFormat("Player : {0}",_playerCapturePower);
         //Debug.LogFormat("_capturePercentage : {0}", _capturePercentage);
         _uiMonsterState.SetCaputrePercentage(_capturePercentage);
@@ -197,18 +180,13 @@ public class Monster : StateMachineBase<MonsterState>
         if (_isAlive && !_isOnBattle)
             ChangeState(MonsterState.Chase);
 
-        if (_hp <= 0)
+        if (_currentHp <= 0)
         {
             if (!_isFriend)
             {
                 Dead();
             }
         }
-    }
-
-    public void ActiveSkill(SkillType type)
-    {
-        _currentSkill_1 = SkillManager._Instance.ActiveSkill(type, gameObject, _target.transform);
     }
 
     public void HitBall()
@@ -235,15 +213,22 @@ public class Monster : StateMachineBase<MonsterState>
         ChangeState(MonsterState.Return);
         ResetMonster();
         MonsterManager._Instance.ReturnMonster(this);
+        PlayerManager._Instance.GetEXP(_monsterLevelData.DropEXP);
+        _monsterSpawnFactory.MonsterDead(this);
+    }
 
-        PlayerManager._Instance.GetEXP(_dropEXP);
+    public void Despawn()
+    {
+        ChangeState(MonsterState.Return);
+        ResetMonster();
+        MonsterManager._Instance.ReturnMonster(this);
     }
 
     protected void ResetMonster()
     {
         _isAlive = false;
 
-        _hp = _maxHp;
+        _currentHp = _maxHp;
 
         _checkTime = 0;
         _stateTime = 0;
@@ -251,7 +236,7 @@ public class Monster : StateMachineBase<MonsterState>
         _prevState = MonsterState.Idle;
         _currentState = MonsterState.Idle;
 
-        _capturePercentage = _playerCapturePower / _maxCaptureValue;
+        _capturePercentage = PlayerManager._Instance._CapturePower / _monsterLevelData.RequiredCaputrePower;
         _uiMonsterState.Init(_player.transform, _type.ToString(), _level);
         _uiMonsterState.SetCaputrePercentage(_capturePercentage);
         _uiMonsterState.ResetUIMonsterState(_level);
@@ -318,9 +303,9 @@ public class Monster : StateMachineBase<MonsterState>
 
 
             if (_skillIndex == 0)
-                ActiveSkill(_skill2Type);
+                SkillManager._Instance.ActiveSkill(_monsterData.Skill1, gameObject, _target.transform);
             else
-                ActiveSkill(_skill1Type);
+                SkillManager._Instance.ActiveSkill(_monsterData.Skill2, gameObject, _target.transform);
         });
         SetState(_stateEnter, MonsterState.Return, () =>
         {
@@ -474,9 +459,9 @@ public class Monster : StateMachineBase<MonsterState>
 
 
             if (_skillIndex == 0)
-                ActiveSkill(_skill2Type);
+                SkillManager._Instance.ActiveSkill(_monsterData.Skill1, gameObject, _target.transform);
             else
-                ActiveSkill(_skill1Type);
+                SkillManager._Instance.ActiveSkill(_monsterData.Skill2, gameObject, _target.transform);
         });
         SetState(_friendStateEnter, MonsterState.Return, () =>
         {

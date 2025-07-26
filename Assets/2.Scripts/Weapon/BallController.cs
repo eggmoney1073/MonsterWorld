@@ -21,7 +21,7 @@ public class BallController : Projectile
 
     IEnumerator Co_CalculateCapture()
     {
-        float percentage = _monster._capturePercentage;
+        float percentage = _monster._CapturePercentage;
         float random = Random.Range(0f, 100f);
 
         yield return new WaitForSeconds(3f);
