@@ -44,7 +44,7 @@ public class Skill_Arrow : Skill
 
         base.InitSkill();
 
-        SetStateUpadte(SkillState.Charge, delegate ()
+        SetState(_stateUpdates, SkillState.Charge, delegate ()
         {
             _checkTime += Time.deltaTime;
             if (_checkTime > _chargeTime)
@@ -53,8 +53,7 @@ public class Skill_Arrow : Skill
                 ChangeState(SkillState.Attack);
             }
         });
-
-        SetStateUpadte(SkillState.Attack, delegate ()
+        SetState(_stateUpdates, SkillState.Attack, delegate ()
         {
             _checkTime += Time.deltaTime;
             if (_checkTime > _shootDiffTime)
@@ -68,8 +67,7 @@ public class Skill_Arrow : Skill
                 }
             }
         });
-
-        SetStateUpadte(SkillState.Finish, delegate ()
+        SetState(_stateUpdates, SkillState.Finish, delegate ()
         {
             bool isFinish = true;
 
@@ -81,9 +79,7 @@ public class Skill_Arrow : Skill
             if (isFinish)
                 FinishSkill();
         });
-
-
-        SetStateEnter(SkillState.Charge, delegate ()
+        SetState(_stateEnter, SkillState.Charge, delegate ()
         {
             for (int i = 0; i < 3; i++)
             {

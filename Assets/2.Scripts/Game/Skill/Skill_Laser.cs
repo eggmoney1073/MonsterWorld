@@ -33,8 +33,7 @@ public class Skill_Laser : Skill
         _skillType = SkillType.Skill_Laser;
 
         base.InitSkill();
-
-        SetStateUpadte(SkillState.Charge, delegate ()
+        SetState(_stateUpdates, SkillState.Charge, delegate ()
         {
             FollowTarget();
 
@@ -47,8 +46,7 @@ public class Skill_Laser : Skill
                 ChangeState(SkillState.Attack);
             }
         });
-
-        SetStateUpadte(SkillState.Attack, delegate ()
+        SetState(_stateUpdates, SkillState.Attack, delegate ()
         {
             FollowTarget();
 
@@ -61,7 +59,7 @@ public class Skill_Laser : Skill
                 List<GameObject> targetList = _laser._Target;
                 int targetCount = targetList.Count;
 
-                for (int i = 0; i < targetCount; i ++)
+                for (int i = 0; i < targetCount; i++)
                 {
                     if (_targetTag == "Player")
                     {
@@ -82,13 +80,11 @@ public class Skill_Laser : Skill
                 ChangeState(SkillState.Finish);
             }
         });
-
-        SetStateEnter(SkillState.Charge, delegate ()
+        SetState(_stateEnter, SkillState.Charge, delegate ()
         {
             _laser.SetLaserTarget(_targetTag);
         });
-
-        SetStateEnter(SkillState.Finish, delegate ()
+        SetState(_stateEnter, SkillState.Finish, delegate ()
         {
             FinishSkill();
         });

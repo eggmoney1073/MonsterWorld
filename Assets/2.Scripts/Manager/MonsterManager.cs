@@ -29,23 +29,24 @@ public class MonsterManager : SingletonGameobject<MonsterManager>
     {
         int index = (int)type;
 
-        float healthScale = _monsterTalbe.ToF(index, MonsterTable.Index.Health_Scale.ToString());
-        float attackScale = _monsterTalbe.ToF(index, MonsterTable.Index.Attack_Scale.ToString());
-
-        int skill1 = _monsterTalbe.ToI(index, MonsterTable.Index.Skill1.ToString());
-        int skill2 = _monsterTalbe.ToI(index, MonsterTable.Index.Skill2.ToString());
-
-        return new MonsterData() { HealthScale = healthScale, AttackScale = attackScale, Skill1 = (SkillType)skill1, Skill2 = (SkillType)skill2 };
+        return new MonsterData() 
+        {
+            HealthScale = _monsterTalbe.ToF(index, MonsterTable.Index.Health_Scale.ToString()),
+            AttackScale = _monsterTalbe.ToF(index, MonsterTable.Index.Attack_Scale.ToString()),
+            Skill1      = (SkillType)_monsterTalbe.ToI(index, MonsterTable.Index.Skill1.ToString()),
+            Skill2      = (SkillType)_monsterTalbe.ToI(index, MonsterTable.Index.Skill2.ToString())
+        };
     }
 
     public MonsterLevelData GetMonsterLevelData(int level)
     {
-        float dropEXP = _monsterLevelTalbe.ToF(level, MonsterLevelTable.Index.Drop_EXP.ToString());
-        float reqCapturePower = _monsterLevelTalbe.ToF(level, MonsterLevelTable.Index.CapturePower.ToString());
-        float health = _monsterLevelTalbe.ToF(level, MonsterLevelTable.Index.Health.ToString());
-        float attack = _monsterLevelTalbe.ToF(level, MonsterLevelTable.Index.Attack.ToString());
-
-        return new MonsterLevelData() { DropEXP = dropEXP, RequiredCaputrePower = reqCapturePower, Health = health, Attack = attack };
+        return new MonsterLevelData() 
+        {
+            DropEXP                 = _monsterLevelTalbe.ToF(level, MonsterLevelTable.Index.Drop_EXP.ToString()),
+            RequiredCaputrePower    = _monsterLevelTalbe.ToF(level, MonsterLevelTable.Index.CapturePower.ToString()),
+            Health                  = _monsterLevelTalbe.ToF(level, MonsterLevelTable.Index.Health.ToString()),
+            Attack                  = _monsterLevelTalbe.ToF(level, MonsterLevelTable.Index.Attack.ToString())
+        };
     }
 
     public Monster GetMonster(MonsterType type)
@@ -139,7 +140,6 @@ public class MonsterManager : SingletonGameobject<MonsterManager>
                 int level = Random.Range(minLevel, maxLevel + 1);
 
                 monster.SetMonsterData(type, level, _playerGO);
-                //monster.SetTarget(_player);
                 monsterGO.SetActive(false);
                 return monster.GetComponent<Monster>();
             });

@@ -1,7 +1,8 @@
+using DefineEnums;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using DefineEnums;
+using static UnityEditor.Experimental.GraphView.GraphView;
 
 public class Skill_Turn : Skill
 {
@@ -21,8 +22,7 @@ public class Skill_Turn : Skill
 
         base.InitSkill();
 
-
-        SetStateUpadte(SkillState.Charge, delegate ()
+        SetState(_stateUpdates, SkillState.Charge, delegate ()
         {
             _checkTime += Time.deltaTime;
             if (_checkTime > _chargeTime)
@@ -32,8 +32,7 @@ public class Skill_Turn : Skill
                 ChangeState(SkillState.Attack);
             }
         });
-
-        SetStateUpadte(SkillState.Attack, delegate ()
+        SetState(_stateUpdates, SkillState.Attack, delegate ()
         {
             _checkTime += Time.deltaTime;
             if (_checkTime > _hitBoxRemainTime)
@@ -43,13 +42,11 @@ public class Skill_Turn : Skill
                 ChangeState(SkillState.Finish);
             }
         });
-
-        SetStateEnter(SkillState.Attack, delegate ()
+        SetState(_stateEnter, SkillState.Attack, delegate ()
         {
             DamageAll();
         });
-
-        SetStateEnter(SkillState.Finish, delegate ()
+        SetState(_stateEnter, SkillState.Finish, delegate ()
         {
             FinishSkill();
         });

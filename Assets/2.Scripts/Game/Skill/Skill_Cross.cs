@@ -26,8 +26,7 @@ public class Skill_Cross : Skill
         _targets = new List<GameObject>();
 
         base.InitSkill();
-
-        SetStateUpadte(SkillState.Charge, delegate ()
+        SetState(_stateUpdates, SkillState.Charge, delegate ()
         {
             _checkTime += Time.deltaTime;
             if (_checkTime > _chargeTime)
@@ -36,8 +35,7 @@ public class Skill_Cross : Skill
                 ChangeState(SkillState.Attack);
             }
         });
-
-        SetStateUpadte(SkillState.Attack, delegate ()
+        SetState(_stateUpdates, SkillState.Attack, delegate ()
         {
             _hitGO.SetActive(false);
             _checkTime += Time.deltaTime;
@@ -54,20 +52,16 @@ public class Skill_Cross : Skill
                 }
             }
         });
-
-
-        SetStateEnter(SkillState.Charge, delegate ()
+        SetState(_stateEnter, SkillState.Charge, delegate ()
         {
             _collider.enabled = false;
         });
-
-        SetStateEnter(SkillState.Attack, delegate ()
+        SetState(_stateEnter, SkillState.Attack, delegate ()
         {
             _hitGO.SetActive(true);
             _collider.enabled = true;
         });
-
-        SetStateEnter(SkillState.Finish, delegate ()
+        SetState(_stateEnter, SkillState.Finish, delegate ()
         {
             _collider.enabled = false;
             FinishSkill();

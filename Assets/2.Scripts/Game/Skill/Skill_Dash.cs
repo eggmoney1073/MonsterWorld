@@ -27,8 +27,7 @@ public class Skill_Dash : Skill
         _trailRenderer.time = _tailRemainTime;
 
         base.InitSkill();
-
-        SetStateUpadte(SkillState.Charge, delegate ()
+        SetState(_stateUpdates, SkillState.Charge, delegate ()
         {
             _checkTime += Time.deltaTime;
             if (_checkTime > _chargeTime)
@@ -39,8 +38,7 @@ public class Skill_Dash : Skill
                 ChangeState(SkillState.Finish);
             }
         });
-
-        SetStateUpadte(SkillState.Finish, delegate ()
+        SetState(_stateUpdates, SkillState.Finish, delegate ()
         {
             _checkTime += Time.deltaTime;
             if (_checkTime > _tailRemainTime)
@@ -49,6 +47,7 @@ public class Skill_Dash : Skill
                 FinishSkill();
             }
         });
+
     }
 
     public override void StartSkill(GameObject caster)

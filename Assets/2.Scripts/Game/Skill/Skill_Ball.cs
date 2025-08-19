@@ -37,7 +37,8 @@ public class Skill_Ball : Skill
 
         base.InitSkill();
 
-        SetStateUpadte(SkillState.Charge, delegate ()
+
+        SetState(_stateUpdates, SkillState.Charge, delegate ()
         {
             _checkTime += Time.deltaTime;
             _ball.transform.localScale = Vector3.MoveTowards(_ball.transform.localScale, _finalScale, _scaleDiff * Time.deltaTime);
@@ -49,8 +50,7 @@ public class Skill_Ball : Skill
                 _isSkillFinish = true;
             }
         });
-
-        SetStateUpadte(SkillState.Attack, delegate ()
+        SetState(_stateUpdates, SkillState.Attack, delegate ()
         {
             _checkTime += Time.deltaTime;
             _ball.transform.position = Vector3.MoveTowards(_ball.transform.position, _target.position, _moveSpeed * Time.deltaTime);
@@ -62,8 +62,7 @@ public class Skill_Ball : Skill
                 ChangeState(SkillState.Finish);
             }
         });
-
-        SetStateUpadte(SkillState.Finish, delegate ()
+        SetState(_stateUpdates, SkillState.Finish, delegate ()
         {
             _checkTime += Time.deltaTime;
             _ball.transform.position = Vector3.MoveTowards(_ball.transform.position, _ball.transform.position + _lastMoveDir, _moveSpeed * Time.deltaTime);
@@ -73,13 +72,11 @@ public class Skill_Ball : Skill
                 FinishSkill();
             }
         });
-
-        SetStateEnter(SkillState.Charge, delegate ()
+        SetState(_stateEnter, SkillState.Charge, delegate ()
         {
             _ball.gameObject.SetActive(true);
         });
-
-        SetStateEnter(SkillState.Attack, delegate ()
+        SetState(_stateEnter, SkillState.Attack, delegate ()
         {
             _collider.enabled = true;
         });

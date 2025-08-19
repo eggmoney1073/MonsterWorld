@@ -32,36 +32,12 @@ public class StateMachineBase<T> : MonoBehaviour
             _stateEnter[_currentState]();
     }
 
-    protected void SetState(Dictionary<T, StateFunction> storage, T state, StateFunction updateFunc)
+    protected void SetState(Dictionary<T, StateFunction> stateStorage, T state, StateFunction stateFunc)
     {
-        if (storage.ContainsKey(state))
-            storage.Remove(state);
+        if (stateStorage.ContainsKey(state))
+            stateStorage.Remove(state);
 
-        storage.Add(state, updateFunc);
-    }
-
-    protected void SetStateUpadte(T state, StateFunction updateFunc)
-    {
-        if (_stateUpdates.ContainsKey(state))
-            _stateUpdates.Remove(state);
-
-        _stateUpdates.Add(state, updateFunc);
-    }
-
-    protected void SetStateEnter(T state, StateFunction updateFunc)
-    {
-        if (_stateEnter.ContainsKey(state))
-            _stateEnter.Remove(state);
-
-        _stateEnter.Add(state, updateFunc);
-    }
-
-    protected void SetStateExit(T state, StateFunction updateFunc)
-    {
-        if (_stateExit.ContainsKey(state))
-            _stateExit.Remove(state);
-
-        _stateExit.Add(state, updateFunc);
+        stateStorage.Add(state, stateFunc);
     }
 
     protected virtual void Update()
