@@ -1,4 +1,4 @@
-# 🎮 Monster Hunter RPG
+# 🎮 Monster World RPG
 
 > 몬스터를 포획하고 소환하여 함께 싸우는 3D 액션 RPG
 
